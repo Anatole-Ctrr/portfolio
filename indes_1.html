@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Anatole Couturier — Étudiant Ingénieur ENSEEIHT</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Space+Mono:ital,wght@0,400;0,700;1,400&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #050810;
+    --bg2: #080d1a;
+    --panel: #0c1228;
+    --border: #1a2a4a;
+    --accent: #00d4ff;
+    --accent2: #ff6b35;
+    --accent3: #7fff6b;
+    --text: #c8d8f0;
+    --text-dim: #5a7090;
+    --white: #eef4ff;
+    --glow: 0 0 20px rgba(0,212,255,0.3);
+    --glow2: 0 0 20px rgba(255,107,53,0.3);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: 'DM Sans', sans-serif; font-weight: 300;
+    overflow-x: hidden; cursor: none;
+  }
+
+  /* CUSTOM CURSOR */
+  .cursor {
+    position: fixed; width: 8px; height: 8px;
+    background: var(--accent); border-radius: 50%;
+    pointer-events: none; z-index: 9999;
+    transition: transform 0.1s ease; mix-blend-mode: screen;
+  }
+  .cursor-ring {
+    position: fixed; width: 32px; height: 32px;
+    border: 1px solid rgba(0,212,255,0.5); border-radius: 50%;
+    pointer-events: none; z-index: 9998;
+    transition: transform 0.15s ease, width 0.2s, height 0.2s;
+  }
+
+  /* CANVAS BG */
+  #bg-canvas {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    z-index: 0; opacity: 0.4; pointer-events: none;
+  }
+
+  /* NAV */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 20px 60px; border-bottom: 1px solid rgba(26,42,74,0.6);
+    backdrop-filter: blur(20px); background: rgba(5,8,16,0.7);
+  }
+  .nav-logo {
+    font-family: 'Orbitron', monospace; font-weight: 900; font-size: 13px;
+    color: var(--accent); letter-spacing: 4px; text-transform: uppercase;
+  }
+  .nav-logo span { color: var(--text-dim); }
+  .nav-links { display: flex; gap: 40px; list-style: none; }
+  .nav-links a {
+    font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: 2px;
+    color: var(--text-dim); text-decoration: none; text-transform: uppercase;
+    transition: color 0.3s;
+  }
+  .nav-links a:hover { color: var(--accent); }
+  .nav-status {
+    display: flex; align-items: center; gap: 8px;
+    font-family: 'Space Mono', monospace; font-size: 10px; color: var(--accent3);
+    letter-spacing: 1px;
+  }
+  .status-dot {
+    width: 6px; height: 6px; border-radius: 50%; background: var(--accent3);
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.4;transform:scale(0.8)} }
+
+  /* HERO */
+  #hero {
+    position: relative; z-index: 1; min-height: 100vh;
+    display: flex; align-items: center; padding: 120px 60px 60px; overflow: hidden;
+  }
+  .hero-inner { max-width: 1100px; width: 100%; }
+  .hero-layout { display: flex; align-items: center; justify-content: space-between; gap: 60px; }
+  .hero-text { flex: 1; }
+
+  .hero-tag {
+    font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: 4px;
+    color: var(--accent); text-transform: uppercase; margin-bottom: 24px;
+    display: flex; align-items: center; gap: 12px;
+    opacity: 0; animation: fadeUp 0.8s 0.2s forwards;
+  }
+  .hero-tag::before { content: ''; display: block; width: 40px; height: 1px; background: var(--accent); }
+  h1 {
+    font-family: 'Orbitron', monospace; font-weight: 900;
+    font-size: clamp(42px, 6vw, 90px); line-height: 0.9;
+    color: var(--white); letter-spacing: -2px;
+    opacity: 0; animation: fadeUp 0.8s 0.4s forwards;
+  }
+  h1 .accent-name { color: var(--accent); }
+  
+  .hero-sub {
+    margin-top: 32px; font-size: 18px; line-height: 1.6;
+    color: var(--text); max-width: 580px; font-weight: 300;
+    opacity: 0; animation: fadeUp 0.8s 0.6s forwards;
+  }
+  .hero-sub strong { color: var(--accent2); font-weight: 500; }
+  
+  .hero-image-container {
+    flex-shrink: 0; width: 320px; height: 320px; border-radius: 50%;
+    padding: 8px; border: 2px solid var(--accent); box-shadow: var(--glow);
+    background: var(--panel); position: relative; z-index: 2;
+    opacity: 0; animation: fadeUp 0.8s 0.5s forwards;
+  }
+  .profile-pic {
+    width: 100%; height: 100%; object-fit: cover; border-radius: 50%;
+    filter: grayscale(20%); transition: filter 0.4s;
+  }
+  .hero-image-container:hover .profile-pic { filter: grayscale(0%); }
+
+  .hero-cta {
+    margin-top: 48px; display: flex; gap: 20px; flex-wrap: wrap;
+    opacity: 0; animation: fadeUp 0.8s 0.8s forwards;
+  }
+  .btn-primary {
+    font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: 3px; text-transform: uppercase;
+    padding: 16px 36px; background: var(--accent); color: var(--bg);
+    border: none; text-decoration: none; font-weight: 700; transition: all 0.3s;
+    clip-path: polygon(12px 0%, 100% 0%, calc(100% - 12px) 100%, 0% 100%);
+  }
+  .btn-primary:hover { background: white; transform: translateY(-2px); }
+  
+  .btn-secondary {
+    font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: 3px; text-transform: uppercase;
+    padding: 16px 36px; background: transparent; border: 1px solid var(--border); color: var(--text);
+    text-decoration: none; transition: all 0.3s;
+    clip-path: polygon(12px 0%, 100% 0%, calc(100% - 12px) 100%, 0% 100%);
+  }
+  .btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+
+  .hero-metrics {
+    margin-top: 80px; display: flex; gap: 60px;
+    opacity: 0; animation: fadeUp 0.8s 1s forwards;
+  }
+  .metric { display: flex; flex-direction: column; gap: 4px; }
+  .metric-val { font-family: 'Orbitron', monospace; font-size: 36px; font-weight: 900; color: var(--accent); }
+  .metric-label { font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: 2px; color: var(--text-dim); text-transform: uppercase; }
+  
+  .hero-turbine {
+    position: absolute; right: -80px; top: 50%; transform: translateY(-50%);
+    width: 700px; height: 700px; opacity: 0.05; pointer-events: none;
+  }
+
+  @keyframes fadeUp { from { opacity:0; transform:translateY(30px); } to { opacity:1; transform:translateY(0); } }
+
+  /* SECTION COMMON */
+  section { position: relative; z-index: 1; padding: 120px 60px; }
+  .section-label {
+    font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: 5px;
+    color: var(--accent2); text-transform: uppercase; margin-bottom: 16px;
+  }
+  .section-title {
+    font-family: 'Orbitron', monospace; font-size: clamp(28px, 4vw, 48px);
+    font-weight: 700; color: var(--white); line-height: 1.1; margin-bottom: 60px;
+  }
+  .divider { height: 1px; background: linear-gradient(90deg, transparent, var(--border), transparent); margin: 0 60px; }
+
+  /* EXPERTISE & CARDS */
+  #expertise { background: var(--bg2); }
+  .expertise-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; }
+  .expertise-card {
+    background: var(--panel); padding: 48px 40px; border: 1px solid var(--border);
+    position: relative; overflow: hidden; transition: all 0.4s;
+  }
+  .expertise-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, var(--accent), transparent);
+    transform: scaleX(0); transform-origin: left; transition: transform 0.4s;
+  }
+  .expertise-card:hover::before { transform: scaleX(1); }
+  .expertise-card:hover { border-color: rgba(0,212,255,0.3); transform: translateY(-4px); }
+  .card-icon { width: 56px; height: 56px; margin-bottom: 28px; display: flex; align-items: center; justify-content: center; }
+  .card-icon svg { width: 100%; height: 100%; }
+  .card-num {
+    position: absolute; top: 32px; right: 32px; font-family: 'Orbitron', monospace;
+    font-size: 48px; font-weight: 900; color: rgba(255,255,255,0.04); line-height: 1;
+  }
+  .card-title { font-family: 'Orbitron', monospace; font-size: 15px; font-weight: 700; color: var(--white); margin-bottom: 16px; letter-spacing: 1px; }
+  .card-desc { font-size: 14px; line-height: 1.7; color: var(--text-dim); }
+  .card-tags { margin-top: 24px; display: flex; flex-wrap: wrap; gap: 8px; }
+  .tag { font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: 1px; padding: 4px 10px; border: 1px solid var(--border); color: var(--text-dim); text-transform: uppercase; }
+
+  /* PROJECTS */
+  #projects { background: var(--bg); }
+  .projects-list { display: flex; flex-direction: column; gap: 2px; }
+  .project-item {
+    display: grid; grid-template-columns: 80px 1fr auto; align-items: start; gap: 40px;
+    padding: 40px; background: var(--panel); border: 1px solid var(--border);
+    position: relative; overflow: hidden; transition: all 0.4s;
+  }
+  .project-item::after {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(90deg, rgba(0,212,255,0.03), transparent);
+    opacity: 0; transition: opacity 0.4s;
+  }
+  .project-item:hover::after { opacity: 1; }
+  .project-item:hover { border-color: rgba(0,212,255,0.2); }
+  .project-year { font-family: 'Orbitron', monospace; font-size: 12px; color: var(--accent); letter-spacing: 2px; padding-top: 4px; }
+  .project-title { font-family: 'Orbitron', monospace; font-size: 18px; font-weight: 700; color: var(--white); margin-bottom: 10px; }
+  .project-desc { font-size: 14px; line-height: 1.7; color: var(--text-dim); max-width: 600px; }
+  .project-tech { margin-top: 16px; display: flex; flex-wrap: wrap; gap: 8px; }
+  .tech-badge { font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: 1px; padding: 3px 10px; background: rgba(0,212,255,0.08); border: 1px solid rgba(0,212,255,0.2); color: var(--accent); text-transform: uppercase; }
+
+  /* SKILLS */
+  #skills { background: var(--bg2); }
+  .skills-container { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; }
+  .skill-group-title { font-family: 'Orbitron', monospace; font-size: 12px; letter-spacing: 3px; color: var(--accent2); text-transform: uppercase; margin-bottom: 32px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
+  .skill-item { margin-bottom: 20px; }
+  .skill-header { display: flex; justify-content: space-between; margin-bottom: 8px; }
+  .skill-name { font-size: 13px; color: var(--text); }
+  .skill-pct { font-family: 'Orbitron', monospace; font-size: 11px; color: var(--accent); }
+  .skill-bar { height: 3px; background: rgba(255,255,255,0.06); position: relative; overflow: hidden; }
+  .skill-fill { position: absolute; top: 0; left: 0; height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); transform: scaleX(0); transform-origin: left; transition: transform 1.2s cubic-bezier(0.4,0,0.2,1); }
+  .skill-fill.animated { transform: scaleX(1); }
+
+  /* EXPERIENCE & TIMELINE */
+  #experience { background: var(--bg); }
+  .timeline { position: relative; padding-left: 40px; }
+  .timeline::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 1px; background: var(--border); }
+  .timeline-item { position: relative; margin-bottom: 60px; padding-left: 40px; }
+  .timeline-dot { position: absolute; left: -44px; top: 6px; width: 8px; height: 8px; border-radius: 50%; background: var(--accent); box-shadow: var(--glow); }
+  .timeline-dot::before { content: ''; position: absolute; inset: -4px; border-radius: 50%; border: 1px solid rgba(0,212,255,0.3); }
+  .timeline-header { display: flex; align-items: center; gap: 20px; margin-bottom: 16px; }
+  .company-logo-container { width: 64px; height: 64px; flex-shrink: 0; background: var(--white); border-radius: 8px; padding: 8px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border); box-shadow: 0 4px 15px rgba(0,0,0,0.4); }
+  .company-logo { max-width: 100%; max-height: 100%; object-fit: contain; }
+  .timeline-meta { display: flex; flex-direction: column; }
+  .timeline-date { font-family: 'Space Mono', monospace; font-size: 11px; color: var(--accent); letter-spacing: 2px; margin-bottom: 4px; }
+  .timeline-role { font-family: 'Orbitron', monospace; font-size: 17px; font-weight: 700; color: var(--white); margin-bottom: 4px; }
+  .timeline-company { font-size: 13px; color: var(--accent2); font-weight: 500; }
+  .timeline-achievements { margin-top: 16px; display: flex; flex-direction: column; gap: 8px; }
+  .achievement { display: flex; align-items: flex-start; gap: 12px; font-size: 13px; color: var(--text-dim); line-height: 1.6; }
+  .achievement::before { content: '▸'; color: var(--accent3); font-size: 10px; margin-top: 3px; flex-shrink: 0; }
+
+  /* FORMATIONS (ex-Publications) */
+  #formations { background: var(--bg2); }
+  .pub-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 2px; }
+  .pub-card { background: var(--panel); padding: 36px; border: 1px solid var(--border); transition: all 0.3s; }
+  .pub-card:hover { border-color: rgba(0,212,255,0.2); }
+  .pub-journal { font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: 2px; color: var(--accent); text-transform: uppercase; margin-bottom: 12px; }
+  .pub-title { font-size: 15px; font-weight: 500; color: var(--white); line-height: 1.5; margin-bottom: 12px; }
+  .pub-authors { font-size: 12px; color: var(--text-dim); margin-bottom: 16px; }
+  .pub-meta { display: flex; gap: 20px; font-family: 'Space Mono', monospace; font-size: 10px; color: var(--text-dim); letter-spacing: 1px; }
+
+  /* CONTACT */
+  #contact { background: var(--bg); }
+  .contact-inner { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: start; }
+  .contact-text { font-size: 15px; line-height: 1.8; color: var(--text-dim); }
+  .contact-links { margin-top: 40px; display: flex; flex-direction: column; gap: 16px; }
+  .contact-link { display: flex; align-items: center; gap: 16px; font-family: 'Space Mono', monospace; font-size: 12px; color: var(--text); text-decoration: none; letter-spacing: 1px; padding: 16px 20px; border: 1px solid var(--border); transition: all 0.3s; }
+  .contact-link:hover { border-color: var(--accent); color: var(--accent); transform: translateX(8px); }
+  .contact-link-icon { width: 20px; height: 20px; opacity: 0.6; }
+  .contact-form { display: flex; flex-direction: column; gap: 16px; }
+  .form-group { display: flex; flex-direction: column; gap: 8px; }
+  .form-label { font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: 2px; color: var(--accent); text-transform: uppercase; }
+  .form-input, .form-textarea { background: var(--panel); border: 1px solid var(--border); color: var(--text); padding: 14px 16px; font-family: 'DM Sans', sans-serif; font-size: 14px; outline: none; transition: border-color 0.3s; resize: none; }
+  .form-input:focus, .form-textarea:focus { border-color: var(--accent); }
+  .form-textarea { height: 120px; }
+
+  /* FOOTER & MISC */
+  footer { position: relative; z-index: 1; padding: 40px 60px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+  .footer-logo { font-family: 'Orbitron', monospace; font-size: 12px; color: var(--text-dim); letter-spacing: 3px; }
+  .footer-copy { font-family: 'Space Mono', monospace; font-size: 10px; color: var(--text-dim); letter-spacing: 1px; }
+  .scroll-line { position: fixed; right: 40px; top: 0; width: 1px; background: var(--border); z-index: 50; }
+  .scroll-progress { width: 100%; background: var(--accent); transition: height 0.1s; }
+
+  /* RESPONSIVE */
+  @media (max-width: 900px) {
+    nav { padding: 16px 24px; } .nav-links { display: none; } section { padding: 80px 24px; }
+    #hero { padding: 100px 24px 60px; } .hero-layout { flex-direction: column-reverse; align-items: flex-start; gap: 40px; }
+    .hero-image-container { width: 240px; height: 240px; margin: 0 auto; } h1 { font-size: 48px; }
+    .expertise-grid, .project-item, .skills-container, .pub-grid, .contact-inner { grid-template-columns: 1fr; }
+    .timeline-header { flex-direction: column; align-items: flex-start; gap: 12px; }
+    footer { padding: 24px; flex-direction: column; gap: 12px; text-align: center; }
+    .hero-metrics { gap: 30px; flex-wrap: wrap; } .divider { margin: 0 24px; }
+  }
+
+  .reveal { opacity: 0; transform: translateY(40px); transition: opacity 0.8s ease, transform 0.8s ease; }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+  .reveal-delay-1 { transition-delay: 0.1s; } .reveal-delay-2 { transition-delay: 0.2s; }
+</style>
+</head>
+<body>
+
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+<canvas id="bg-canvas"></canvas>
+<div class="scroll-line" id="scrollLine"><div class="scroll-progress" id="scrollProgress" style="height:0%"></div></div>
+
+<nav>
+  <div class="nav-logo">AC<span> / </span>ENG</div>
+  <ul class="nav-links">
+    <li><a href="#expertise">Expertise</a></li>
+    <li><a href="#projects">Projets</a></li>
+    <li><a href="#skills">Compétences</a></li>
+    <li><a href="#experience">Parcours</a></li>
+    <li><a href="#formations">Formation</a></li>
+    <li><a href="#contact">Contact</a></li>
+  </ul>
+  <div class="nav-status"><div class="status-dot"></div>Recherche de Stage 2026</div>
+</nav>
+
+<section id="hero">
+  <div class="hero-inner">
+    <div class="hero-layout">
+        <div class="hero-text">
+            <div class="hero-tag">Étudiant Ingénieur — ENSEEIHT</div>
+            <h1>ANATOLE<br><span class="accent-name">COUTURIER</span></h1>
+            <p class="hero-sub">
+                Spécialisation en <strong>Mécanique des Fluides, Énergie et Environnement</strong>. 
+                Passionné par le développement de solutions énergétiques durables pour répondre aux défis actuels.
+                <br><br>🎯 <em>Actuellement à la recherche d'un stage de 3 mois à l'étranger pour l'été 2026.</em>
+            </p>
+            <div class="hero-cta">
+                <a href="#experience" class="btn-primary">Mon Parcours</a>
+                <a href="#contact" class="btn-secondary">Me contacter</a>
+            </div>
+        </div>
+        
+        <div class="hero-image-container reveal">
+            <img src="assets/anatole-photo.jpg" alt="Anatole Couturier" class="profile-pic">
+        </div>
+    </div>
+
+    <div class="hero-metrics">
+      <div class="metric"><div class="metric-val">2026</div><div class="metric-label">Été de Stage</div></div>
+      <div class="metric"><div class="metric-val">3</div><div class="metric-label">Projets/Stages</div></div>
+      <div class="metric"><div class="metric-val">B2</div><div class="metric-label">Cambridge English</div></div>
+      <div class="metric"><div class="metric-val">7+</div><div class="metric-label">Logiciels Maîtrisés</div></div>
+    </div>
+  </div>
+
+  <svg class="hero-turbine" viewBox="0 0 700 700" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="350" cy="350" r="340" stroke="white" stroke-width="0.5"/>
+    <circle cx="350" cy="350" r="280" stroke="white" stroke-width="0.5"/>
+    <circle cx="350" cy="350" r="200" stroke="white" stroke-width="0.5"/>
+    <circle cx="350" cy="350" r="100" stroke="white" stroke-width="1"/>
+    <circle cx="350" cy="350" r="40" fill="white"/>
+    <g id="blades" transform-origin="350 350">
+      <path d="M350 310 C330 250 290 200 330 130 L350 350 Z" fill="white"/>
+      <path d="M350 310 C330 250 290 200 330 130 L350 350 Z" fill="white" transform="rotate(45,350,350)"/>
+      <path d="M350 310 C330 250 290 200 330 130 L350 350 Z" fill="white" transform="rotate(90,350,350)"/>
+      <path d="M350 310 C330 250 290 200 330 130 L350 350 Z" fill="white" transform="rotate(135,350,350)"/>
+      <path d="M350 310 C330 250 290 200 330 130 L350 350 Z" fill="white" transform="rotate(180,350,350)"/>
+      <path d="M350 310 C330 250 290 200 330 130 L350 350 Z" fill="white" transform="rotate(225,350,350)"/>
+      <path d="M350 310 C330 250 290 200 330 130 L350 350 Z" fill="white" transform="rotate(270,350,350)"/>
+      <path d="M350 310 C330 250 290 200 330 130 L350 350 Z" fill="white" transform="rotate(315,350,350)"/>
+    </g>
+    <animateTransform attributeName="transform" type="rotate" from="0 350 350" to="360 350 350" dur="30s" repeatCount="indefinite" xlink:href="#blades"/>
+  </svg>
+</section>
+
+<div class="divider"></div>
+
+<section id="expertise">
+  <div class="section-label">Domaines d'études</div>
+  <div class="section-title reveal">Expertise<br>Technique</div>
+  <div class="expertise-grid">
+    
+    <div class="expertise-card reveal">
+      <div class="card-num">01</div>
+      <div class="card-icon"><svg viewBox="0 0 56 56" fill="none"><path d="M28 4 C28 4 10 16 10 28 C10 40 18 52 28 52 C38 52 46 40 46 28 C46 16 28 4 28 4Z" stroke="#00d4ff" stroke-width="1.5"/><path d="M28 14 C20 20 16 28 20 36 C24 44 34 44 38 36" stroke="#00d4ff" stroke-width="1.5" stroke-dasharray="3 3"/><circle cx="28" cy="28" r="5" fill="#00d4ff" opacity="0.5"/></svg></div>
+      <div class="card-title">Mécanique des Fluides</div>
+      <div class="card-desc">Analyse des écoulements, modélisation CFD et études thermofluides appliquées aux systèmes énergétiques.</div>
+      <div class="card-tags"><span class="tag">CFD</span><span class="tag">Ansys Fluent</span><span class="tag">AVBP</span></div>
+    </div>
+
+    <div class="expertise-card reveal reveal-delay-1">
+      <div class="card-num">02</div>
+      <div class="card-icon"><svg viewBox="0 0 56 56" fill="none"><ellipse cx="28" cy="28" rx="22" ry="10" stroke="#ff6b35" stroke-width="1.5"/><path d="M6 28 C6 18 28 8 50 28" stroke="#ff6b35" stroke-width="1.5"/><path d="M6 28 C6 38 28 48 50 28" stroke="#ff6b35" stroke-width="1.5"/></svg></div>
+      <div class="card-title">Énergie & Environnement</div>
+      <div class="card-desc">Développement de solutions durables. Diagnostic de réseaux d'eau et optimisation des ressources énergétiques.</div>
+      <div class="card-tags"><span class="tag">Hydraulique</span><span class="tag">Durabilité</span><span class="tag">Réseaux</span></div>
+    </div>
+
+    <div class="expertise-card reveal reveal-delay-2">
+      <div class="card-num">03</div>
+      <div class="card-icon"><svg viewBox="0 0 56 56" fill="none"><path d="M8 40 L20 16 L28 28 L36 12 L48 40 Z" stroke="#7fff6b" stroke-width="1.5" fill="none"/><circle cx="20" cy="16" r="2" fill="#7fff6b"/><circle cx="28" cy="28" r="2" fill="#7fff6b"/><circle cx="36" cy="12" r="2" fill="#7fff6b"/></svg></div>
+      <div class="card-title">Simulation Numérique</div>
+      <div class="card-desc">Programmation scientifique pour la modélisation mathématique et la synthèse de données physiques (Python, Fortran).</div>
+      <div class="card-tags"><span class="tag">Python</span><span class="tag">Fortran90</span><span class="tag">Matlab</span></div>
+    </div>
+
+    <div class="expertise-card reveal">
+      <div class="card-num">04</div>
+      <div class="card-icon"><svg viewBox="0 0 56 56" fill="none"><rect x="10" y="20" width="36" height="20" stroke="#00d4ff" stroke-width="1.5" rx="2"/><path d="M16 14 L16 20 M28 10 L28 20 M40 14 L40 20" stroke="#00d4ff" stroke-width="1.5"/><circle cx="16" cy="12" r="3" stroke="#00d4ff" stroke-width="1.5"/><circle cx="28" cy="8" r="3" stroke="#00d4ff" stroke-width="1.5"/><circle cx="40" cy="12" r="3" stroke="#00d4ff" stroke-width="1.5"/></svg></div>
+      <div class="card-title">Modélisation 1D/3D</div>
+      <div class="card-desc">Création de modèles 1D thermo-fluides (AMESIM) et validation via des simulations CFD 3D détaillées.</div>
+      <div class="card-tags"><span class="tag">Amesim</span><span class="tag">Modélisation 1D</span><span class="tag">Validation</span></div>
+    </div>
+
+    <div class="expertise-card reveal reveal-delay-1">
+      <div class="card-num">05</div>
+      <div class="card-icon"><svg viewBox="0 0 56 56" fill="none"><path d="M28 48 L10 20 L28 8 L46 20 Z" stroke="#ff6b35" stroke-width="1.5" fill="none"/><circle cx="28" cy="8" r="3" fill="#ff6b35" opacity="0.7"/></svg></div>
+      <div class="card-title">Gestion de Projet</div>
+      <div class="card-desc">Expérience en Junior-Entreprise (Business Development) avec gestion d'équipes techniques, RH et communication.</div>
+      <div class="card-tags"><span class="tag">Management</span><span class="tag">Business Dev</span><span class="tag">Coordination</span></div>
+    </div>
+
+    <div class="expertise-card reveal reveal-delay-2">
+      <div class="card-num">06</div>
+      <div class="card-icon"><svg viewBox="0 0 56 56" fill="none"><circle cx="28" cy="28" r="18" stroke="#7fff6b" stroke-width="1.5"/><path d="M28 10 C32 16 36 20 36 28 C36 36 32 40 28 46" stroke="#7fff6b" stroke-width="1.5"/></svg></div>
+      <div class="card-title">Leadership & Sécurité</div>
+      <div class="card-desc">Gestion opérationnelle d'équipes sur le terrain. Capacité d'intervention rapide et respect strict des protocoles de sécurité.</div>
+      <div class="card-tags"><span class="tag">BNSSA</span><span class="tag">Chef d'équipe</span><span class="tag">PSE1/PSE2</span></div>
+    </div>
+
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<section id="projects">
+  <div class="section-label">Projets & Applications</div>
+  <div class="section-title reveal">Cas Pratiques</div>
+  <div class="projects-list">
+
+    <div class="project-item reveal">
+      <div class="project-year">2025</div>
+      <div>
+        <div class="project-title">Méthodologie de test bas-débit pour poteaux d'incendie</div>
+        <div class="project-desc">Amélioration de la fiabilité et de l'efficacité en eau des tests de conformité. Analyse du réseau, identification des erreurs de mesure et conception d'un protocole intégrant des capteurs électroniques. Contribution à la réduction de la consommation d'eau.</div>
+        <div class="project-tech">
+          <span class="tech-badge">Hydraulique</span><span class="tech-badge">Capteurs</span><span class="tech-badge">R&D</span>
+        </div>
+      </div>
+      <div class="project-score">
+        <div class="score-val">Veolia</div><div class="score-label">Partenaire</div>
+      </div>
+    </div>
+
+    <div class="project-item reveal">
+      <div class="project-year">2024</div>
+      <div>
+        <div class="project-title">Modélisation de chambre de combustion d'hélicoptère</div>
+        <div class="project-desc">Génération de données thermo-fluides 1D avec AMESIM. Affinage des paramètres de modélisation et validation des résultats 1D à travers des simulations CFD 3D sous AVBP et Ansys Fluent.</div>
+        <div class="project-tech">
+          <span class="tech-badge">Amesim</span><span class="tech-badge">Ansys Fluent</span><span class="tech-badge">AVBP</span>
+        </div>
+      </div>
+      <div class="project-score">
+        <div class="score-val">Safran</div><div class="score-label">Partenaire</div>
+      </div>
+    </div>
+
+    <div class="project-item reveal">
+      <div class="project-year">2024</div>
+      <div>
+        <div class="project-title">Étude sur les oscillateurs couplés</div>
+        <div class="project-desc">Projet académique collaboratif de 100 heures réalisé en classes préparatoires. Travail incluant l'analyse physique, la modélisation mathématique et la synthèse complète des résultats.</div>
+        <div class="project-tech">
+          <span class="tech-badge">Modélisation</span><span class="tech-badge">Physique</span><span class="tech-badge">Travail d'équipe</span>
+        </div>
+      </div>
+      <div class="project-score">
+        <div class="score-val">100h</div><div class="score-label">Volume horaire</div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<section id="skills">
+  <div class="section-label">Maîtrise technique</div>
+  <div class="section-title reveal">Compétences</div>
+  <div class="skills-container">
+    <div class="reveal">
+        <div class="skill-group-title">Simulation & Outils Ingénieur</div>
+        <div class="skill-item">
+          <div class="skill-header"><span class="skill-name">Ansys Fluent / AVBP</span><span class="skill-pct">85%</span></div>
+          <div class="skill-bar"><div class="skill-fill" data-width="0.85"></div></div>
+        </div>
+        <div class="skill-item">
+          <div class="skill-header"><span class="skill-name">Amesim (1D)</span><span class="skill-pct">80%</span></div>
+          <div class="skill-bar"><div class="skill-fill" data-width="0.80"></div></div>
+        </div>
+        <div class="skill-item">
+          <div class="skill-header"><span class="skill-name">Matlab</span><span class="skill-pct">90%</span></div>
+          <div class="skill-bar"><div class="skill-fill" data-width="0.90"></div></div>
+        </div>
+        <div class="skill-item">
+            <div class="skill-header"><span class="skill-name">Excel (Data analysis)</span><span class="skill-pct">95%</span></div>
+            <div class="skill-bar"><div class="skill-fill" data-width="0.95"></div></div>
+        </div>
+    </div>
+    <div class="reveal reveal-delay-1">
+        <div class="skill-group-title">Programmation & Logiciels</div>
+        <div class="skill-item">
+            <div class="skill-header"><span class="skill-name">Python</span><span class="skill-pct">90%</span></div>
+            <div class="skill-bar"><div class="skill-fill" data-width="0.90"></div></div>
+        </div>
+        <div class="skill-item">
+            <div class="skill-header"><span class="skill-name">Fortran90</span><span class="skill-pct">75%</span></div>
+            <div class="skill-bar"><div class="skill-fill" data-width="0.75"></div></div>
+        </div>
+        <div class="skill-item">
+            <div class="skill-header"><span class="skill-name">C++</span><span class="skill-pct">70%</span></div>
+            <div class="skill-bar"><div class="skill-fill" data-width="0.70"></div></div>
+        </div>
+        <div class="skill-item">
+            <div class="skill-header"><span class="skill-name">LaTeX</span><span class="skill-pct">95%</span></div>
+            <div class="skill-bar"><div class="skill-fill" data-width="0.95"></div></div>
+        </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<section id="experience">
+  <div class="section-label">Expériences professionnelles</div>
+  <div class="section-title reveal">Parcours</div>
+  <div class="timeline">
+
+    <div class="timeline-item reveal">
+      <div class="timeline-dot"></div>
+      <div class="timeline-header">
+          <div class="company-logo-container"><img src="assets/logo-n7.png" alt="N7 Consulting" class="company-logo"></div>
+          <div class="timeline-meta">
+              <div class="timeline-date">2024 — Présent</div>
+              <div class="timeline-role">Vice-Président</div>
+              <div class="timeline-company">N7 Consulting (Junior-Entreprise)</div>
+          </div>
+      </div>
+      <div class="timeline-achievements">
+        <div class="achievement">Responsable de la gestion du département Business Development.</div>
+        <div class="achievement">Coordination des activités avec les équipes techniques, RH et communication.</div>
+        <div class="achievement">Acquisition d'une solide expérience en gestion de projet d'ingénierie.</div>
+      </div>
+    </div>
+
+    <div class="timeline-item reveal">
+      <div class="timeline-dot"></div>
+      <div class="timeline-header">
+          <div class="company-logo-container"><img src="assets/logo-veolia.png" alt="Veolia" class="company-logo"></div>
+          <div class="timeline-meta">
+              <div class="timeline-date">Juin — Juillet 2025</div>
+              <div class="timeline-role">Stagiaire Recherche (MFEED)</div>
+              <div class="timeline-company">Veolia x IMFT</div>
+          </div>
+      </div>
+      <div class="timeline-achievements">
+        <div class="achievement">Développement d'une méthodologie de mesure bas-débit pour les poteaux d'incendie.</div>
+        <div class="achievement">Collaboration avec un stagiaire en électronique pour l'intégration de capteurs adaptés aux contraintes terrain.</div>
+      </div>
+    </div>
+
+    <div class="timeline-item reveal">
+      <div class="timeline-dot"></div>
+      <div class="timeline-header">
+          <div class="company-logo-container"><img src="assets/logo-safran.png" alt="Safran" class="company-logo"></div>
+          <div class="timeline-meta">
+              <div class="timeline-date">Mai — Juin 2024</div>
+              <div class="timeline-role">Département Technique (Service Combustion)</div>
+              <div class="timeline-company">Safran Helicopter Engines</div>
+          </div>
+      </div>
+      <div class="timeline-achievements">
+        <div class="achievement">Modélisation 1D d'une chambre de combustion de moteur d'hélicoptère (AMESIM).</div>
+        <div class="achievement">Vérification des résultats par des simulations CFD 3D sous AVBP et Ansys Fluent.</div>
+      </div>
+    </div>
+
+    <div class="timeline-item reveal">
+      <div class="timeline-dot"></div>
+      <div class="timeline-header">
+          <div class="company-logo-container"><img src="assets/logo-rescue.png" alt="Sauvetage" class="company-logo"></div>
+          <div class="timeline-meta">
+              <div class="timeline-date">Été 2022 & 2024</div>
+              <div class="timeline-role">Chef d'Équipe Sauveteurs</div>
+              <div class="timeline-company">Sécurité & Secourisme</div>
+          </div>
+      </div>
+      <div class="timeline-achievements">
+        <div class="achievement">Supervision d'une équipe de huit sauveteurs.</div>
+        <div class="achievement">Garantie des procédures de sécurité et coordination de la surveillance quotidienne.</div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<section id="formations">
+  <div class="section-label">Diplômes & Langues</div>
+  <div class="section-title reveal">Formation &<br>Certifications</div>
+  <div class="pub-grid">
+
+    <div class="pub-card reveal">
+      <div class="pub-journal">2024 — Présent · Toulouse, France</div>
+      <div class="pub-title">Diplôme d'Ingénieur</div>
+      <div class="pub-authors"><strong>ENSEEIHT</strong></div>
+      <div class="pub-meta"><span>Spécialisation : Mécanique des Fluides, Énergie et Environnement.</span></div>
+    </div>
+
+    <div class="pub-card reveal reveal-delay-1">
+      <div class="pub-journal">2022 — 2024 · Bordeaux, France</div>
+      <div class="pub-title">Cycle Préparatoire Ingénieur</div>
+      <div class="pub-authors"><strong>La Prépa des INP</strong></div>
+      <div class="pub-meta"><span>Classes préparatoires intégrées du réseau INP.</span></div>
+    </div>
+
+    <div class="pub-card reveal">
+      <div class="pub-journal">Langues</div>
+      <div class="pub-title">Anglais & Espagnol</div>
+      <div class="pub-authors"><strong>Niveau Avancé / Intermédiaire</strong></div>
+      <div class="pub-meta"><span>Français (Natif) · Anglais B2 (Cambridge Advanced) · Espagnol (Intermédiaire)</span></div>
+    </div>
+
+    <div class="pub-card reveal reveal-delay-1">
+      <div class="pub-journal">Secourisme</div>
+      <div class="pub-title">Certifications d'État</div>
+      <div class="pub-authors"><strong>BNSSA, PSE1 & PSE2</strong></div>
+      <div class="pub-meta"><span>Qualification Nationale de Sauvetage et Secourisme en Équipe.</span></div>
+    </div>
+
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<section id="contact">
+  <div class="section-label">Prise de contact</div>
+  <div class="section-title reveal">Échangeons<br>Ensemble</div>
+  <div class="contact-inner">
+    <div class="reveal">
+      <div class="contact-text">
+        Je suis activement à la recherche d'un stage de 3 mois à l'international pour la période de l'été 2026.<br><br>
+        Basé à Toulouse, je suis très mobile et ouvert aux opportunités mondiales dans le domaine des énergies et de la mécanique des fluides.
+      </div>
+      <div class="contact-links">
+        <a href="mailto:couturier.anat@gmail.com" class="contact-link">
+          <svg class="contact-link-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+          couturier.anat@gmail.com
+        </a>
+        <a href="https://linkedin.com/in/anatole-couturier-06b931286" target="_blank" class="contact-link">
+          <svg class="contact-link-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6zM2 9h4v12H2z"/><circle cx="4" cy="4" r="2"/></svg>
+          linkedin.com/in/anatole-couturier
+        </a>
+        <a href="tel:+33782690255" class="contact-link">
+          <svg class="contact-link-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z"/></svg>
+          +33 7 82 69 02 55
+        </a>
+      </div>
+    </div>
+    <form id="contact-form" class="contact-form">
+  <div class="form-group">
+    <label class="form-label">Nom</label>
+    <input type="text" id="name" name="nom" class="form-input" required>
+  </div>
+  <div class="form-group">
+    <label class="form-label">Email</label>
+    <input type="email" id="email" name="email" class="form-input" required>
+  </div>
+  <div class="form-group">
+    <label class="form-label">Message</label>
+    <textarea id="message" name="message" class="form-textarea" required></textarea>
+  </div>
+  <button type="submit" id="submit-btn" class="btn-primary">Envoyer</button>
+</form>
+</section>
+
+<footer>
+  <div class="footer-logo">ANATOLE COUTURIER</div>
+  <div class="footer-copy">© 2026 — Étudiant Ingénieur · ENSEEIHT</div>
+</footer>
+
+<script>
+  const cursor = document.getElementById('cursor');
+  const ring   = document.getElementById('cursorRing');
+  let mx = 0, my = 0, rx = 0, ry = 0;
+
+  document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; cursor.style.left = mx - 4 + 'px'; cursor.style.top = my - 4 + 'px'; });
+  (function animRing() { rx += (mx - rx) * 0.12; ry += (my - ry) * 0.12; ring.style.left = rx - 16 + 'px'; ring.style.top = ry - 16 + 'px'; requestAnimationFrame(animRing); })();
+
+  document.querySelectorAll('a, button, .expertise-card, .project-item, .pub-card').forEach(el => {
+    el.addEventListener('mouseenter', () => { ring.style.width = '50px'; ring.style.height = '50px'; cursor.style.transform = 'scale(2)'; });
+    el.addEventListener('mouseleave', () => { ring.style.width = '32px'; ring.style.height = '32px'; cursor.style.transform = 'scale(1)'; });
+  });
+
+  const prog = document.getElementById('scrollProgress');
+  window.addEventListener('scroll', () => { const p = window.scrollY / (document.body.scrollHeight - window.innerHeight); prog.style.height = (p * 100) + '%'; });
+
+  const revealEls = document.querySelectorAll('.reveal');
+  const obs = new IntersectionObserver((entries) => { entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); obs.unobserve(e.target); } }); }, { threshold: 0.12 });
+  revealEls.forEach(el => obs.observe(el));
+
+  const barObs = new IntersectionObserver((entries) => { entries.forEach(e => { if (e.isIntersecting) { const w = parseFloat(e.target.dataset.width); e.target.style.transform = `scaleX(${w})`; e.target.classList.add('animated'); barObs.unobserve(e.target); } }); }, { threshold: 0.5 });
+  document.querySelectorAll('.skill-fill').forEach(el => barObs.observe(el));
+
+  const canvas = document.getElementById('bg-canvas');
+  const ctx = canvas.getContext('2d');
+  let W, H, particles = [];
+
+  function resize() { W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight; }
+  resize(); window.addEventListener('resize', resize);
+
+  class Particle {
+    constructor() { this.reset(); }
+    reset() { this.x = Math.random() * W; this.y = Math.random() * H; this.vx = (Math.random() - 0.5) * 0.4; this.vy = (Math.random() - 0.3) * 0.3; this.life = Math.random(); this.maxLife = 0.6 + Math.random() * 0.4; this.size = 0.5 + Math.random() * 1.5; this.color = Math.random() > 0.7 ? '#ff6b35' : '#00d4ff'; }
+    update() { this.x += this.vx; this.y += this.vy; this.life += 0.002; if (this.life > this.maxLife || this.x < 0 || this.x > W || this.y > H) this.reset(); }
+    draw() { const alpha = Math.sin((this.life / this.maxLife) * Math.PI) * 0.5; ctx.beginPath(); ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2); ctx.fillStyle = this.color; ctx.globalAlpha = alpha; ctx.fill(); }
+  }
+
+  for (let i = 0; i < 200; i++) particles.push(new Particle());
+
+  function drawGrid() {
+    ctx.globalAlpha = 0.04; ctx.strokeStyle = '#00d4ff'; ctx.lineWidth = 0.5;
+    for (let x = 0; x < W; x += 80) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke(); }
+    for (let y = 0; y < H; y += 80) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); }
+  }
+
+  function animate() { ctx.clearRect(0, 0, W, H); drawGrid(); particles.forEach(p => { p.update(); p.draw(); }); requestAnimationFrame(animate); }
+  animate();
+
+const contactForm = document.getElementById('contact-form');
+const btn = document.getElementById('submit-btn');
+
+contactForm.addEventListener('submit', function(e) {
+  e.preventDefault(); // Empêche le rechargement de la page
+  
+  btn.textContent = "Envoi en cours...";
+  btn.style.opacity = "0.5";
+
+  const formData = new FormData(contactForm);
+  const data = new URLSearchParams(formData);
+
+  // REMPLACE l'URL ci-dessous par ton URL Google Apps Script
+  fetch('https://script.google.com/macros/s/AKfycbzNy-0VoYmIt_BtYWL-gzTU29eml3IINkZut4xFWFb0WUcvpX_AnuviLJexAG3pj3dH/exec', {
+    method: 'POST',
+    body: data
+  })
+  .then(res => {
+    btn.textContent = "Message envoyé ✓";
+    btn.style.background = "#7fff6b";
+    contactForm.reset(); // Vide le formulaire
+  })
+  .catch(err => {
+    btn.textContent = "Erreur d'envoi";
+    btn.style.background = "#ff6b35";
+    console.log(err);
+  });
+});
+
+</script>
+</body>
+</html>
